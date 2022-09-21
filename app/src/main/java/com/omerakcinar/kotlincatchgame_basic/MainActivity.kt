@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.omerakcinar.kotlincatchgame_basic.databinding.ActivityMainBinding
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -19,7 +18,9 @@ class MainActivity : AppCompatActivity() {
     private var imageContainer: ArrayList<ImageView> = arrayListOf()
     private var handler = Handler()
     private var runnable = Runnable {}
-    private var gameTime = 10
+    private var gameTime = 20
+    private var gameDifficulty = 1
+    private var gameSpeed: Long = 400
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,11 +28,35 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         imagesToArray()
-        hideEachImage()
-        timeCounter()
+        for (eachImage in imageContainer) {
+            eachImage.visibility = View.INVISIBLE
+        }
     }
 
-    // Contain images in a list called imageContainer
+    fun gameDifficulty(view: View) {
+        if (binding.difficultyEasy.isPressed) {
+            gameDifficulty = 1
+        } else if (binding.difficultyNormal.isPressed) {
+            gameDifficulty = 2
+        } else if (binding.difficultyHard.isPressed) {
+            gameDifficulty = 3
+        }
+
+        when (gameDifficulty) {
+            1 ->
+                gameSpeed = 500
+            2 ->
+                gameSpeed = 400
+            3 ->
+                gameSpeed = 200
+        }
+
+        startTheGame()
+        timeCounter()
+        binding.radioGroup.visibility = View.INVISIBLE
+
+    }
+
     fun imagesToArray() {
         imageContainer.add(binding.imageView)
         imageContainer.add(binding.imageView2)
@@ -51,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         imageContainer.add(binding.imageView16)
     }
 
-    fun hideEachImage() {
+    fun startTheGame() {
         runnable = object : Runnable {
             override fun run() {
                 for (eachImage in imageContainer) {
@@ -59,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 val randomIndex = Random.nextInt(16)
                 imageContainer[randomIndex].visibility = View.VISIBLE
-                handler.postDelayed(runnable, 300)
+                handler.postDelayed(runnable, gameSpeed)
             }
         }
         handler.post(runnable)
@@ -73,7 +98,7 @@ class MainActivity : AppCompatActivity() {
     fun timeCounter() {
         binding.timeView.text = "Time : ${gameTime}"
         var gameTimeLong = gameTime.toLong() * 1000
-        object : CountDownTimer(gameTimeLong, 1000) {
+        object : CountDownTimer(gameTimeLong + 500, 1000) {
             override fun onTick(p0: Long) {
                 binding.timeView.text = "Time : ${p0 / 1000}"
             }
